@@ -9,6 +9,13 @@ class Audience(enum.Enum):
     ADULT = 3
     ALL = 4
 
+# favorite_book_table (association table)
+favorite_book_table = db.Table(
+    'favorite_book_table',
+    db.Column('book_id', db.Integer, db.ForeignKey('book.id'), primary_key=True),
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True)
+)
+
 class Book(db.Model):
     """Book model."""
     id = db.Column(db.Integer, primary_key=True)
@@ -54,7 +61,22 @@ class Genre(db.Model):
 
     def __repr__(self):
         return f'<Genre: {self.name}>'
-
+# user model
+class User(db.Model):
+    """User model for storing user information."""
+    
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), nullable=False, unique=True)
+    
+    # create the relationship with Book model through the association table
+    favorite_books = db.relationship(
+        'Book', 
+        secondary=favorite_book_table,
+        backref=db.backref('users_who_favorited', lazy='dynamic')
+    )
+    
+    def __repr__(self):
+        return f'<User {self.username}>'
 book_genre_table = db.Table('book_genre',
     db.Column('book_id', db.Integer, db.ForeignKey('book.id')),
     db.Column('genre_id', db.Integer, db.ForeignKey('genre.id'))
